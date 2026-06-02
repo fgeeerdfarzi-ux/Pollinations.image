@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .controls { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; }
+        input, select, button { padding: 10px; }
+        #result { margin-top: 20px; max-width: 100%; }
+        img { width: 100%; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <h2>Генератор изображений Pollinations</h2>
+    <div class="controls">
+        <input type="text" id="prompt" placeholder="Опишите, что нарисовать...">
+        <select id="size">
+            <option value="1024x1024">Квадрат (1024x1024)</option>
+            <option value="16:9">Широкий (16:9)</option>
+            <option value="9:16">Вертикальный (9:16)</option>
+        </select>
+        <select id="style">
+            <option value="realistic">Реализм</option>
+            <option value="anime">Аниме</option>
+            <option value="oil painting">Масляная живопись</option>
+        </select>
+        <button onclick="generate()">Создать изображение</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function generate() {
+            const prompt = document.getElementById('prompt').value;
+            const size = document.getElementById('size').value;
+            const style = document.getElementById('style').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!prompt) return alert("Введите описание!");
+
+            // URL Pollinations.ai формируется очень просто
+            const encodedPrompt = encodeURIComponent(`${prompt}, style: ${style}`);
+            const url = `https://pollinations.ai/p/${encodedPrompt}?width=${size}&seed=42&nologo=true`;
+
+            resultDiv.innerHTML = `<img src="${url}" alt="AI Image">`;
+        }
+    </script>
+</body>
+</html>
