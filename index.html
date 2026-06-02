@@ -3,49 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Generator</title>
+    <title>Pollinations AI Studio</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .controls { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; }
-        input, select, button { padding: 10px; }
-        #result { margin-top: 20px; max-width: 100%; }
-        img { width: 100%; border-radius: 8px; }
+        /* Базовые стили для тёмно-серой темы */
+        :root {
+            --bg-main: #121212;
+            --bg-card: #1e1e1e;
+            --bg-input: #2d2d2d;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --accent: #4a4a4a;
+            --accent-hover: #606060;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 60px; /* Отступ для мобильного меню */
+        }
+
+        /* Контейнер приложения */
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Навигация (Вкладки) */
+        .nav-tabs {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            flex: 1;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* Стили окон вкладок */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Компоненты Главной страницы */
+        .card {
+            background-color: var(--bg-card);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .card h2 {
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        /* Форма генератора */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input, select {
+            background-color: var(--bg-input);
+            color: var(--text-main);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Область результата */
+        .result-box {
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .result-box img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        /* Анимация загрузки (Лоадер) */
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid var(--bg-input);
+            border-top: 4px solid var(--text-main);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .action-btn {
+            margin-top: 10px;
+            background-color: #2e7d32;
+        }
+        .action-btn:hover {
+            background-color: #388e3c;
+        }
+
+        /* Галерея */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .gallery-item {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-item .item-info {
+            padding: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 10px;
+            }
+            .nav-tabs {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                margin-bottom: 0;
+                z-index: 1000;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+            }
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h2>Генератор изображений Pollinations</h2>
-    <div class="controls">
-        <input type="text" id="prompt" placeholder="Опишите, что нарисовать...">
-        <select id="size">
-            <option value="1024x1024">Квадрат (1024x1024)</option>
-            <option value="16:9">Широкий (16:9)</option>
-            <option value="9:16">Вертикальный (9:16)</option>
-        </select>
-        <select id="style">
-            <option value="realistic">Реализм</option>
-            <option value="anime">Аниме</option>
-            <option value="oil painting">Масляная живопись</option>
-        </select>
-        <button onclick="generate()">Создать изображение</button>
+    <div class="app-container">
+        <header>
+            <h1>Pollinations Studio</h1>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('home')">Главная</button>
+            <button class="tab-btn" onclick="switchTab('generator')">Создать</button>
+            <button class="tab-btn" onclick="switchTab('gallery')">Галерея</button>
+        </nav>
+
+        <section id="home" class="tab-content active">
+            <div class="card">
+                <h2>Добро пожаловать!</h2>
+                <p>Это карманная студия для генерации изображений с помощью нейросети Pollinations.ai.</p>
+                <br>
+                <p><strong>Как это работает:</strong> перейдите во вкладку «Создать», введите свой запрос на английском или русском языке, выберите стиль и нажмите кнопку создания.</p>
+            </div>
+            <div class="card">
+                <h3>Особенности:</h3>
+                <p>• Полностью бесплатно и без ограничений.<br>• Работает прямо в браузере мобильного или ПК.<br>• Сохраняет ваши шедевры во встроенную галерею.</p>
+            </div>
+        </section>
+
+        <section id="generator" class="tab-content">
+            <div class="card form-group">
+                <input type="text" id="prompt" placeholder="Опишите картинку (например: кубический мир)...">
+                
+                <select id="size">
+                    <option value="1024x1024">Квадрат (1:1)</option>
+                    <option value="1920x1080">Горизонтальный (16:9)</option>
+                    <option value="1080x1920">Вертикальный (9:16)</option>
+                </select>
+
+                <select id="style">
+                    <option value="photorealistic, 8k resolution">Реализм</option>
+                    <option value="anime style, vibrant colors">Аниме</option>
+                    <option value="cyberpunk aesthetic, neon lighting">Киберпанк</option>
+                    <option value="digital art, detailed fantasy">Фэнтези арт</option>
+                </select>
+
+                <button onclick="generateImage()">Сгенерировать</button>
+            </div>
+
+            <div class="result-box">
+                <div class="loader" id="loader"></div>
+                <img id="result-img" alt="Ваш шедевр появится здесь">
+                <button id="download-btn" class="action-btn" style="display: none;" onclick="downloadImage()">Скачать картинку</button>
+            </div>
+        </section>
+
+        <section id="gallery" class="tab-content">
+            <div class="gallery-grid" id="gallery-grid">
+                </div>
+        </section>
     </div>
 
-    <div id="result"></div>
-
     <script>
-        function generate() {
+        // Переключение вкладок
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+
+            if(tabId === 'gallery') {
+                renderGallery();
+            }
+        }
+
+        // Генерация изображений
+        let currentImageUrl = '';
+
+        function generateImage() {
             const prompt = document.getElementById('prompt').value;
-            const size = document.getElementById('size').value;
+            const size = document.getElementById('size').value.split('x');
             const style = document.getElementById('style').value;
-            const resultDiv = document.getElementById('result');
+            
+            const imgElement = document.getElementById('result-img');
+            const loader = document.getElementById('loader');
+            const downloadBtn = document.getElementById('download-btn');
 
-            if (!prompt) return alert("Введите описание!");
+            if (!prompt) return alert("Пожалуйста, введите описание!");
 
-            // URL Pollinations.ai формируется очень просто
-            const encodedPrompt = encodeURIComponent(`${prompt}, style: ${style}`);
-            const url = `https://pollinations.ai/p/${encodedPrompt}?width=${size}&seed=42&nologo=true`;
+            // Включаем лоадер, прячем старую картинку и кнопку скачивания
+            loader.style.display = 'block';
+            imgElement.style.display = 'none';
+            downloadBtn.style.display = 'none';
 
-            resultDiv.innerHTML = `<img src="${url}" alt="AI Image">`;
+            // Формируем URL
+            const width = size[0];
+            const height = size[1];
+            const seed = Math.floor(Math.random() * 100000); // Случайный сид для разнообразия картинок
+            const encodedPrompt = encodeURIComponent(`${prompt}, ${style}`);
+            
+            currentImageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
+
+            // Ждем загрузки картинки браузером
+            imgElement.src = currentImageUrl;
+            imgElement.onload = function() {
+                loader.style.display = 'none';
+                imgElement.style.display = 'block';
+                downloadBtn.style.display = 'block';
+                
+                // Сохраняем в галерею
+                saveToHistory(currentImageUrl, prompt);
+            };
+        }
+
+        // Функция скачивания (работает через обход CORS с помощью Blob)
+        async function downloadImage() {
+            if (!currentImageUrl) return;
+            try {
+                const response = await fetch(currentImageUrl);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `ai-image-${Date.now()}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl);
+            } catch (error) {
+                // Если прямая загрузка заблокирована, просто открываем в новом окне
+                window.open(currentImageUrl, '_blank');
+            }
+        }
+
+        // Сохранение истории в LocalStorage
+        function saveToHistory(url, prompt) {
+            let history = JSON.parse(localStorage.getItem('ai_studio_history')) || [];
+            // Добавляем новую запись в начало массива
+            history.unshift({ url: url, prompt: prompt });
+            // Ограничим галерею например 30 картинками, чтобы не перегружать память
+            if(history.length > 30) history.pop();
+            
+            localStorage.setItem('ai_studio_history', JSON.stringify(history));
+        }
+
+        // Отображение галереи
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+            
+            let history = JSON.parse(localStorage.getItem('ai_studio_history')) || [];
+
+            if (history.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Тут пока пусто. Создайте что-нибудь!</p>';
+                return;
+            }
+
+            history.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'gallery-item';
+                itemDiv.innerHTML = `
+                    <img src="${item.url}" alt="AI Art" onclick="window.open('${item.url}', '_blank')">
+                    <div class="item-info">${item.prompt}</div>
+                `;
+                grid.appendChild(itemDiv);
+            });
         }
     </script>
 </body>
