@@ -9,71 +9,206 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
         :root {
-          --bg-main: #121212;
-          --bg-card: #1e1e1e;
-          --bg-input: #2d2d2d;
-          --text-main: #e0e0e0;
-          --text-muted: #a0a0a0;
-          --accent: #4a4a4a;
-          --accent-hover: #606060;
-          --success: #2e7d32;
+            --bg-main: #121212;
+            --bg-card: #1e1e1e;
+            --bg-input: #2d2d2d;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --accent: #4a4a4a;
+            --accent-hover: #606060;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 80px; }
-        .app-container { width: 100%; max-width: 600px; padding: 20px; }
-        header { text-align: center; margin-bottom: 20px; }
-        header h1 { font-size: 1.8rem; color: #ffffff; }
-        
-        /* Вкладки */
-        .nav-tabs { display: flex; background-color: var(--bg-card); border-radius: 12px; padding: 6px; margin-bottom: 20px; gap: 4px; }
-        .tab-btn { background: none; border: none; color: var(--text-muted); padding: 12px 8px; font-size: 0.9rem; cursor: pointer; flex: 1; border-radius: 8px; transition: all 0.3s; }
-        .tab-btn.active { background-color: var(--accent); color: #ffffff; font-weight: bold; }
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Элементы интерфейса */
-        .card { background-color: var(--bg-card); padding: 20px; border-radius: 14px; margin-bottom: 15px; }
-        .card h2, .card h3 { margin-bottom: 12px; }
-        input, select, button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 1rem; outline: none; margin-bottom: 10px; }
-        input, select { background-color: var(--bg-input); color: var(--text-main); }
-        button { background-color: var(--accent); color: white; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: #ffffff;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            flex: 1;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .card h2 { margin-bottom: 10px; font-size: 1.4rem; }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input, select {
+            background-color: var(--bg-input);
+            color: var(--text-main);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
         button:hover { background-color: var(--accent-hover); }
+
+        .result-box {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .result-box img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid var(--bg-input);
+            border-top: 4px solid var(--text-main);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .action-btn { margin-top: 10px; background-color: #2e7d32; }
+        .action-btn:hover { background-color: #388e3c; }
         
-        .btn-success { background-color: var(--success); }
-        .btn-success:hover { background-color: #388e3c; }
-        .btn-sec { background-color: #37474f; }
-        .btn-sec:hover { background-color: #455a64; }
-        
-        /* Сетка аватарок */
-        .avatar-picker { display: flex; gap: 10px; justify-content: center; margin: 15px 0; font-size: 2rem; }
-        .avatar-opt { cursor: pointer; padding: 5px; border-radius: 50%; border: 2px solid transparent; transition: 0.2s; user-select: none; }
-        .avatar-opt.selected { border-color: white; background: var(--bg-input); }
+        #pwa-install-btn {
+            background-color: #3f51b5;
+            margin-top: 15px;
+            display: none;
+        }
 
-        /* Поиск и Галерея */
-        .search-box { margin-bottom: 15px; }
-        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .gallery-item { background-color: var(--bg-card); border-radius: 10px; overflow: hidden; position: relative; }
-        .gallery-item img { width: 100%; height: 150px; object-fit: cover; display: block; cursor: pointer; }
-        .gallery-item .author-tag { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; z-index: 10; }
-        .gallery-item .item-info { padding: 8px; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
 
-        /* Кастомный стиль */
-        #custom-style-container { display: none; }
-        .user-badge { display: flex; align-items: center; gap: 15px; background: var(--bg-input); padding: 10px; border-radius: 10px; margin-bottom: 15px; }
-        .user-badge .user-av { font-size: 2.5rem; }
+        .gallery-item {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+        }
 
-        .result-box { margin-top: 20px; text-align: center; }
-        .result-box img { width: 100%; border-radius: 12px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .loader { display: none; margin: 20px auto; border: 4px solid var(--bg-input); border-top: 4px solid #fff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .gallery-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+        }
+
+        .gallery-item .item-info {
+            padding: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         @media (max-width: 480px) {
-            .nav-tabs { position: fixed; bottom: 10px; left: 10px; right: 10px; margin-bottom: 0; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); }
+            .nav-tabs {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                margin-bottom: 0;
+                z-index: 1000;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+            }
             .gallery-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -89,19 +224,22 @@
             <button class="tab-btn active" onclick="switchTab('home')">Главная</button>
             <button class="tab-btn" onclick="switchTab('generator')">Создать</button>
             <button class="tab-btn" onclick="switchTab('gallery')">Галерея</button>
-            <button class="tab-btn" id="profile-tab-btn" onclick="switchTab('profile')">Войти</button>
         </nav>
 
         <section id="home" class="tab-content active">
             <div class="card">
                 <h2>Добро пожаловать!</h2>
-                <p>Создавайте арты вместе с друзьями. Войдите в аккаунт, чтобы сохранять свои работы в облако!</p>
-                <button style="margin-top:15px; background-color:#3f51b5; display:none;" id="pwa-install-btn" onclick="installPWA()">Добавить на главный экран</button>
+                <p>Это карманная студия нейросети ИИ.</p>
+                <button id="pwa-install-btn" onclick="installPWA()">Добавить на главный экран</button>
+            </div>
+            <div class="card">
+                <h3>Особенности:</h3>
+                <p>• Полностью бесплатно и без лимитов.<br>• Работает на смартфонах и ПК.<br>• Сохраняет картинки в Галерею.</p>
             </div>
         </section>
 
         <section id="generator" class="tab-content">
-            <div class="card">
+            <div class="card form-group">
                 <input type="text" id="prompt" placeholder="Опишите картинку...">
                 
                 <select id="size">
@@ -111,286 +249,118 @@
                 </select>
 
                 <select id="style" onchange="toggleCustomStyle()">
-                    <option value="photorealistic, 8k resolution">Реализм</option>
-                    <option value="anime style, vibrant colors">Аниме</option>
-                    <option value="pixel art style, 16-bit retro">Пиксель-арт</option>
+                    <option value="photorealistic, 8k resolution, highly detailed">Реализм</option>
+                    <option value="anime style, vibrant studio ghibli colors">Аниме</option>
+                    <option value="cyberpunk aesthetic, neon glows">Киберпанк</option>
+                    <option value="pixel art style, 16-bit retro video game">Пиксель-арт</option>
                     <option value="custom">-- Свой стиль --</option>
                 </select>
-                
-                <div id="custom-style-container">
-                    <input type="text" id="custom-style-input" placeholder="Введите ваш стиль (например: 3d render, lego style)...">
+
+                <div id="custom-style-container" style="display: none;">
+                    <input type="text" id="custom-style-input" placeholder="Например: lego style, 3d render, oil painting...">
                 </div>
 
-                <button class="btn-success" onclick="generateImage()">Сгенерировать</button>
+                <button onclick="generateImage()">Сгенерировать</button>
             </div>
 
             <div class="result-box">
                 <div class="loader" id="loader"></div>
-                <img id="result-img" alt="Результат">
-                <button id="download-btn" class="btn-sec" style="display: none; margin-top:10px;" onclick="downloadImage()">Скачать картинку</button>
+                <img id="result-img" alt="Готовое изображение">
+                <button id="download-btn" class="action-btn" style="display: none;" onclick="downloadImage()">Скачать картинку</button>
             </div>
         </section>
 
         <section id="gallery" class="tab-content">
-            <div class="search-box">
-                <input type="text" id="gallery-search" placeholder="Поиск картинок по описанию..." oninput="filterGallery()">
-            </div>
             <div class="gallery-grid" id="gallery-grid"></div>
-        </section>
-
-        <section id="profile" class="tab-content">
-            <div id="auth-ui"></div>
         </section>
     </div>
 
     <script>
-        // --- КОНФИГУРАЦИЯ SUPABASE (ВСТАВЬТЕ СВОИ ДАННЫЕ СЮДА) ---
-        const SUPABASE_URL = "https://pfeabpcdlbbzlirglzgx.supabase.co/rest/v1/"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmZWFicGNkbGJiemxpcmdsemd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDIyMjcsImV4cCI6MjA5NTk3ODIyN30.hz-btCwU-3392ul_gblo7tGMdcGYTsHK0D7FxvFCx-Y"; 
+        // Регистрация Сервис-Воркера для работы PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log('Service Worker зарегистрирован!'))
+            .catch(err => console.log('Ошибка SW:', err));
+        }
 
-        let supabase = null;
+        // Логика установки на экран смартфона
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('pwa-install-btn').style.display = 'block';
+        });
 
-        try {
-            if (SUPABASE_URL && SUPABASE_URL !== "ВАШ_SUPABASE_URL" && window.supabase) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log("Supabase успешно подключен!");
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('pwa-install-btn').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
             }
-        } catch (error) {
-            console.error("Ошибка инициализации Supabase:", error);
         }
 
-        let currentUser = JSON.parse(localStorage.getItem('studio_user')) || null;
-        let globalGalleryData = [];
-        let selectedAvatar = "🤖";
-
-        // Инициализация приложения при загрузке страницы
-        window.onload = function() {
-            updateProfileTabHeader();
-            renderAuthUI();
-        }
-
-        // Переключение вкладок
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
-            
-            if (window.event && window.event.target) {
-                window.event.target.classList.add('active');
-            } else {
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
-                        btn.classList.add('active');
-                    }
-                });
-            }
-            
-            if(tabId === 'gallery') loadGallery();
+            event.target.classList.add('active');
+            if(tabId === 'gallery') renderGallery();
         }
 
+        // Функция показа/скрытия текстового поля для своего стиля
         function toggleCustomStyle() {
             const styleSelect = document.getElementById('style').value;
-            document.getElementById('custom-style-container').style.display = (styleSelect === 'custom') ? 'block' : 'none';
+            const container = document.getElementById('custom-style-container');
+            container.style.display = (styleSelect === 'custom') ? 'block' : 'none';
         }
 
-        // --- ЛОГИКА РАБОТЫ С АККАУНТАМИ ---
-        function changeAvatar(emoji, el) {
-            selectedAvatar = emoji;
-            document.querySelectorAll('.avatar-opt').forEach(opt => opt.classList.remove('selected'));
-            el.classList.add('selected');
-        }
-
-        function updateProfileTabHeader() {
-            const btn = document.getElementById('profile-tab-btn');
-            if(btn) {
-                btn.innerText = currentUser ? `${currentUser.avatar} ${currentUser.username}` : "Войти";
-            }
-        }
-
-        function renderAuthUI() {
-            const container = document.getElementById('auth-ui');
-            if (!container) return;
-            
-            if (currentUser) {
-                container.innerHTML = `
-                    <div class="card">
-                        <div class="user-badge">
-                            <div class="user-av">${currentUser.avatar}</div>
-                            <div>
-                                <h3>${currentUser.username}</h3>
-                                <p style="font-size:0.8rem; color:var(--text-muted);">ID: ${currentUser.id}</p>
-                            </div>
-                        </div>
-                        <p style="margin-bottom:15px; font-size:0.9rem; color:var(--text-muted);">Запишите ваш ID и пароль, чтобы зайти с другого устройства:<br><b>Пароль:</b> ${currentUser.password}</p>
-                        <button class="btn-sec" onclick="logout()">Выйти из аккаунта</button>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="card">
-                        <h3>Создать новый аккаунт</h3>
-                        <input type="text" id="reg-name" placeholder="Ваше имя / Никнейм">
-                        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:5px;">Выберите аватарку:</p>
-                        <div class="avatar-picker">
-                            <div class="avatar-opt selected" onclick="changeAvatar('🤖', this)">🤖</div>
-                            <div class="avatar-opt" onclick="changeAvatar('🐱', this)">🐱</div>
-                            <div class="avatar-opt" onclick="changeAvatar('🐸', this)">🐸</div>
-                            <div class="avatar-opt" onclick="changeAvatar('👑', this)">👑</div>
-                            <div class="avatar-opt" onclick="changeAvatar('🔥', this)">🔥</div>
-                        </div>
-                        <button class="btn-success" onclick="registerAccount()">Сгенерировать ID и Войти</button>
-                    </div>
-                    <div class="card">
-                        <h3>Войти по ID</h3>
-                        <input type="text" id="login-id" placeholder="Ваш User ID">
-                        <input type="password" id="login-pass" placeholder="Ваш Пароль">
-                        <button onclick="loginAccount()">Войти</button>
-                    </div>
-                `;
-            }
-        }
-
-        async function registerAccount() {
-            const username = document.getElementById('reg-name').value.trim();
-            if(!username) return alert("Введите никнейм!");
-
-            const userId = 'user_' + Math.floor(100000 + Math.random() * 900000);
-            const password = Math.floor(1000 + Math.random() * 9000).toString();
-            const newUser = { id: userId, password: password, username: username, avatar: selectedAvatar };
-
-            if(supabase) {
-                const { error } = await supabase.from('profiles').insert([newUser]);
-                if(error) return alert("Ошибка базы данных: " + error.message);
-            }
-
-            localStorage.setItem('studio_user', JSON.stringify(newUser));
-            currentUser = newUser;
-            updateProfileTabHeader();
-            renderAuthUI();
-        }
-
-        async function loginAccount() {
-            const id = document.getElementById('login-id').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-
-            if(!id || !pass) return alert("Заполните все поля!");
-
-            if(supabase) {
-                const { data, error } = await supabase.from('profiles').select('*').eq('id', id).eq('password', pass).single();
-                if(error || !data) return alert("Неверный ID или пароль!");
-                
-                currentUser = data;
-                localStorage.setItem('studio_user', JSON.stringify(currentUser));
-                updateProfileTabHeader();
-                renderAuthUI();
-            } else {
-                alert("База данных не подключена.");
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('studio_user');
-            currentUser = null;
-            updateProfileTabHeader();
-            renderAuthUI();
-        }
-
-        // --- ГЕНЕРАЦИЯ ---
         let currentImageUrl = '';
 
-        async function generateImage() {
-            const promptInput = document.getElementById('prompt').value.trim();
+        function generateImage() {
+            const prompt = document.getElementById('prompt').value;
             const size = document.getElementById('size').value.split('x');
-            const styleSelect = document.getElementById('style').value;
+            const style = document.getElementById('style').value;
             
-            let finalStyle = styleSelect;
-            if(styleSelect === 'custom') {
+            // Проверяем, выбран ли кастомный стиль
+            let finalStyle = style;
+            if (style === 'custom') {
                 finalStyle = document.getElementById('custom-style-input').value.trim() || 'highly detailed';
             }
-
+            
             const imgElement = document.getElementById('result-img');
             const loader = document.getElementById('loader');
             const downloadBtn = document.getElementById('download-btn');
 
-            if (!promptInput) return alert("Введите описание!");
+            if (!prompt) return alert("Пожалуйста, введите описание!");
 
             loader.style.display = 'block';
             imgElement.style.display = 'none';
             downloadBtn.style.display = 'none';
 
+            const width = size[0];
+            const height = size[1];
             const seed = Math.floor(Math.random() * 999999);
-            const encodedPrompt = encodeURIComponent(`${promptInput}, ${finalStyle}`);
-            currentImageUrl = `https://image.pollinations.ai/p/${encodedPrompt}?width=${size[0]}&height=${size[1]}&seed=${seed}&nologo=true`;
+            const encodedPrompt = encodeURIComponent(`${prompt}, ${finalStyle}`);
+            
+            currentImageUrl = `https://image.pollinations.ai/p/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
 
             imgElement.src = currentImageUrl;
             
-            imgElement.onload = async function() {
+            imgElement.onload = function() {
                 loader.style.display = 'none';
                 imgElement.style.display = 'block';
                 downloadBtn.style.display = 'block';
-                
-                if(currentUser && supabase) {
-                    await supabase.from('gallery').insert([{
-                        user_id: currentUser.id,
-                        url: currentImageUrl,
-                        prompt: promptInput
-                    }]);
-                }
+                saveToHistory(currentImageUrl, prompt);
             };
 
             imgElement.onerror = function() {
                 loader.style.display = 'none';
-                alert("Ошибка загрузки изображения.");
+                alert("Не удалось сгенерировать. Попробуйте изменить описание или повторить позже.");
             };
-        }
-
-        // --- ГАЛЕРЕЯ И ФИЛЬТР ---
-        async function loadGallery() {
-            const grid = document.getElementById('gallery-grid');
-            if(!grid) return;
-            grid.innerHTML = '<div class="loader" style="display:block;"></div>';
-
-            if(supabase) {
-                const { data, error } = await supabase.from('gallery').select('*, profiles(username, avatar)').order('created_at', { ascending: false });
-                if(!error && data) {
-                    globalGalleryData = data;
-                    displayGalleryItems(globalGalleryData);
-                    return;
-                }
-            }
-            grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--text-muted);">Зарегистрируйтесь и настройте Supabase для просмотра общей галереи.</p>';
-        }
-
-        function displayGalleryItems(items) {
-            const grid = document.getElementById('gallery-grid');
-            if(!grid) return;
-            grid.innerHTML = '';
-
-            if(items.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--text-muted);">Ничего не найдено</p>';
-                return;
-            }
-
-            items.forEach(item => {
-                const authorName = item.profiles ? item.profiles.username : "Аноним";
-                const authorAv = item.profiles ? item.profiles.avatar : "👤";
-                
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'gallery-item';
-                itemDiv.innerHTML = `
-                    <div class="author-tag">${authorAv} ${authorName}</div>
-                    <img src="${item.url}" alt="AI" onclick="window.open('${item.url}', '_blank')">
-                    <div class="item-info">${item.prompt}</div>
-                `;
-                grid.appendChild(itemDiv);
-            });
-        }
-
-        function filterGallery() {
-            const query = document.getElementById('gallery-search').value.toLowerCase().trim();
-            const filtered = globalGalleryData.filter(item => item.prompt.toLowerCase().includes(query));
-            displayGalleryItems(filtered);
         }
 
         async function downloadImage() {
@@ -406,14 +376,38 @@
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(blobUrl);
-            } catch (e) { window.open(currentImageUrl, '_blank'); }
+            } catch (error) {
+                window.open(currentImageUrl, '_blank');
+            }
         }
 
-        // PWA
-        let defPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); defPrompt = e; const btn = document.getElementById('pwa-install-btn'); if(btn) btn.style.display = 'block'; });
-        function installPWA() { if (defPrompt) { defPrompt.prompt(); defPrompt.userChoice.then(() => { const btn = document.getElementById('pwa-install-btn'); if(btn) btn.style.display = 'none'; defPrompt = null; }); } }
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+        function saveToHistory(url, prompt) {
+            let history = JSON.parse(localStorage.getItem('ai_studio_history')) || [];
+            history.unshift({ url: url, prompt: prompt });
+            if(history.length > 30) history.pop();
+            localStorage.setItem('ai_studio_history', JSON.stringify(history));
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+            let history = JSON.parse(localStorage.getItem('ai_studio_history')) || [];
+
+            if (history.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Тут пока пусто.</p>';
+                return;
+            }
+
+            history.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'gallery-item';
+                itemDiv.innerHTML = `
+                    <img src="${item.url}" alt="AI" onclick="window.open('${item.url}', '_blank')">
+                    <div class="item-info">${item.prompt}</div>
+                `;
+                grid.appendChild(itemDiv);
+            });
+        }
     </script>
 </body>
 </html>
