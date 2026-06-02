@@ -142,7 +142,7 @@
     <script>
         // --- КОНФИГУРАЦИЯ SUPABASE ---
         const SUPABASE_URL = "https://pfeabpcdlbbzlirglzgx.supabase.co/rest/v1/";
-        const SUPABASE_ANON_KEY = "sb_publishable_H-eGBBXquacZ1svjrI5Ytw_h_m8X2aB";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmZWFicGNkbGJiemxpcmdsemd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDIyMjcsImV4cCI6MjA5NTk3ODIyN30.hz-btCwU-3392ul_gblo7tGMdcGYTsHK0D7FxvFCx-Y";
         const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         let currentUser = JSON.parse(localStorage.getItem('studio_user')) || null;
