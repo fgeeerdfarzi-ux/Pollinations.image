@@ -140,248 +140,274 @@
     </div>
 
     <script>
-        // --- КОНФИГУРАЦИЯ SUPABASE ---
-        const SUPABASE_URL = "https://pfeabpcdlbbzlirglzgx.supabase.co/rest/v1/";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmZWFicGNkbGJiemxpcmdsemd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDIyMjcsImV4cCI6MjA5NTk3ODIyN30.hz-btCwU-3392ul_gblo7tGMdcGYTsHK0D7FxvFCx-Y";
-        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+    // --- КОНФИГУРАЦИЯ SUPABASE ---
+    const SUPABASE_URL = "https://pfeabpcdlbbzlirglzgx.supabase.co/rest/v1/"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmZWFicGNkbGJiemxpcmdsemd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDIyMjcsImV4cCI6MjA5NTk3ODIyN30.hz-btCwU-3392ul_gblo7tGMdcGYTsHK0D7FxvFCx-Y"; 
 
-        let currentUser = JSON.parse(localStorage.getItem('studio_user')) || null;
-        let globalGalleryData = [];
-        let selectedAvatar = "🤖";
+    let supabase = null;
 
-        // Инициализация приложения
-        window.onload = function() {
-            updateProfileTabHeader();
-            renderAuthUI();
-            if(!supabase) alert("Забыли указать URL и Ключ Supabase в коде!");
+    try {
+        if (SUPABASE_URL && SUPABASE_URL !== "ВАШ_SUPABASE_URL_СЮДА" && window.supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log("Supabase успешно подключен!");
         }
+    } catch (error) {
+        console.error("Ошибка инициализации Supabase:", error);
+    }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if(event) event.target.classList.add('active');
-            if(tabId === 'gallery') loadGallery();
-        }
+    let currentUser = JSON.parse(localStorage.getItem('studio_user')) || null;
+    let globalGalleryData = [];
+    let selectedAvatar = "🤖";
 
-        function toggleCustomStyle() {
-            const styleSelect = document.getElementById('style').value;
-            document.getElementById('custom-style-container').style.display = (styleSelect === 'custom') ? 'block' : 'none';
-        }
+    // Инициализация приложения
+    window.onload = function() {
+        updateProfileTabHeader();
+        renderAuthUI();
+    }
 
-        // --- ЛОГИКА РАБОТЫ С АККАУНТАМИ ---
-        function changeAvatar(emoji, el) {
-            selectedAvatar = emoji;
-            document.querySelectorAll('.avatar-opt').forEach(opt => opt.classList.remove('selected'));
-            el.classList.add('selected');
-        }
-
-        function updateProfileTabHeader() {
-            const btn = document.getElementById('profile-tab-btn');
-            btn.innerText = currentUser ? `${currentUser.avatar} ${currentUser.username}` : "Войти";
-        }
-
-        function renderAuthUI() {
-            const container = document.getElementById('auth-ui');
-            if (currentUser) {
-                // Личный кабинет
-                container.innerHTML = `
-                    <div class="card">
-                        <div class="user-badge">
-                            <div class="user-av">${currentUser.avatar}</div>
-                            <div>
-                                <h3>${currentUser.username}</h3>
-                                <p style="font-size:0.8rem; color:var(--text-muted);">ID: ${currentUser.id}</p>
-                            </div>
-                        </div>
-                        <p style="margin-bottom:15px; font-size:0.9rem; color:var(--text-muted);">Запишите ваш ID и пароль, чтобы зайти с другого устройства:<br><b>Пароль:</b> ${currentUser.password}</p>
-                        <button class="btn-sec" onclick="logout()">Выйти из аккаунта</button>
-                    </div>
-                `;
-            } else {
-                // Окна Входа / Регистрации
-                container.innerHTML = `
-                    <div class="card">
-                        <h3>Создать новый аккаунт</h3>
-                        <input type="text" id="reg-name" placeholder="Ваше имя / Никнейм">
-                        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:5px;">Выберите аватарку:</p>
-                        <div class="avatar-picker">
-                            <div class="avatar-opt selected" onclick="changeAvatar('🤖', this)">🤖</div>
-                            <div class="avatar-opt" onclick="changeAvatar('🐱', this)">🐱</div>
-                            <div class="avatar-opt" onclick="changeAvatar('🐸', this)">🐸</div>
-                            <div class="avatar-opt" onclick="changeAvatar('👑', this)">👑</div>
-                            <div class="avatar-opt" onclick="changeAvatar('🔥', this)">🔥</div>
-                        </div>
-                        <button class="btn-success" onclick="registerAccount()">Сгенерировать ID и Войти</button>
-                    </div>
-                    <div class="card">
-                        <h3>Войти по ID</h3>
-                        <input type="text" id="login-id" placeholder="Ваш User ID">
-                        <input type="password" id="login-pass" placeholder="Ваш Пароль">
-                        <button onclick="loginAccount()">Войти</button>
-                    </div>
-                `;
-            }
-        }
-
-        async function registerAccount() {
-            const username = document.getElementById('reg-name').value.trim();
-            if(!username) return alert("Введите никнейм!");
-
-            // Генерация случайного ID и пароля
-            const userId = 'user_' + Math.floor(100000 + Math.random() * 900000);
-            const password = Math.floor(1000 + Math.random() * 9000).toString();
-
-            const newUser = { id: userId, password: password, username: username, avatar: selectedAvatar };
-
-            if(supabase) {
-                const { error } = await supabase.from('profiles').insert([newUser]);
-                if(error) return alert("Ошибка при создании аккаунта: " + error.message);
-            }
-
-            localStorage.setItem('studio_user', JSON.stringify(newUser));
-            currentUser = newUser;
-            updateProfileTabHeader();
-            renderAuthUI();
-        }
-
-        async function loginAccount() {
-            const id = document.getElementById('login-id').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-
-            if(!id || !pass) return alert("Заполните все поля!");
-
-            if(supabase) {
-                const { data, error } = await supabase.from('profiles').select('*').eq('id', id).eq('password', pass).single();
-                if(error || !data) return alert("Неверный ID или пароль!");
-                
-                currentUser = data;
-                localStorage.setItem('studio_user', JSON.stringify(currentUser));
-                updateProfileTabHeader();
-                renderAuthUI();
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('studio_user');
-            currentUser = null;
-            updateProfileTabHeader();
-            renderAuthUI();
-        }
-
-        // --- ГЕНЕРАЦИЯ И СТИЛИ ---
-        let currentImageUrl = '';
-
-        async function generateImage() {
-            const promptInput = document.getElementById('prompt').value.trim();
-            const size = document.getElementById('size').value.split('x');
-            const styleSelect = document.getElementById('style').value;
-            
-            let finalStyle = styleSelect;
-            if(styleSelect === 'custom') {
-                finalStyle = document.getElementById('custom-style-input').value.trim() || 'highly detailed';
-            }
-
-            const imgElement = document.getElementById('result-img');
-            const loader = document.getElementById('loader');
-            const downloadBtn = document.getElementById('download-btn');
-
-            if (!promptInput) return alert("Введите описание!");
-
-            loader.style.display = 'block';
-            imgElement.style.display = 'none';
-            downloadBtn.style.display = 'none';
-
-            const seed = Math.floor(Math.random() * 999999);
-            const encodedPrompt = encodeURIComponent(`${promptInput}, ${finalStyle}`);
-            currentImageUrl = `https://image.pollinations.ai/p/${encodedPrompt}?width=${size[0]}&height=${size[1]}&seed=${seed}&nologo=true`;
-
-            imgElement.src = currentImageUrl;
-            
-            imgElement.onload = async function() {
-                loader.style.display = 'none';
-                imgElement.style.display = 'block';
-                downloadBtn.style.display = 'block';
-                
-                // Сохранение в облако, если залогинен
-                if(currentUser && supabase) {
-                    await supabase.from('gallery').insert([{
-                        user_id: currentUser.id,
-                        url: currentImageUrl,
-                        prompt: promptInput
-                    }]);
-                }
-            };
-        }
-
-        // --- УМНАЯ ГАЛЕРЕЯ И ПОИСК ---
-        async function loadGallery() {
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '<div class="loader" style="display:block;"></div>';
-
-            if(supabase) {
-                // Загружаем картинки и сразу данные авторов (через связывание таблиц)
-                const { data, error } = await supabase.from('gallery').select('*, profiles(username, avatar)').order('created_at', { ascending: false });
-                if(!error && data) {
-                    globalGalleryData = data;
-                    displayGalleryItems(globalGalleryData);
-                    return;
-                }
-            }
-            grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">Не удалось загрузить галерею из облака.</p>';
-        }
-
-        function displayGalleryItems(items) {
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '';
-
-            if(items.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--text-muted);">Ничего не найдено</p>';
-                return;
-            }
-
-            items.forEach(item => {
-                const authorName = item.profiles ? item.profiles.username : "Аноним";
-                const authorAv = item.profiles ? item.profiles.avatar : "👤";
-                
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'gallery-item';
-                itemDiv.innerHTML = `
-                    <div class="author-tag">${authorAv} ${authorName}</div>
-                    <img src="${item.url}" alt="AI" onclick="window.open('${item.url}', '_blank')">
-                    <div class="item-info">${item.prompt}</div>
-                `;
-                grid.appendChild(itemDiv);
+    // Переключение вкладок
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        
+        if (event && event.target) {
+            event.target.classList.add('active');
+        } else {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
             });
         }
+        
+        if(tabId === 'gallery') loadGallery();
+    }
 
-        function filterGallery() {
-            const query = document.getElementById('gallery-search').value.toLowerCase().trim();
-            const filtered = globalGalleryData.filter(item => item.prompt.toLowerCase().includes(query));
-            displayGalleryItems(filtered);
+    function toggleCustomStyle() {
+        const styleSelect = document.getElementById('style').value;
+        document.getElementById('custom-style-container').style.display = (styleSelect === 'custom') ? 'block' : 'none';
+    }
+
+    // --- ЛОГИКА РАБОТЫ С АККАУНТАМИ ---
+    function changeAvatar(emoji, el) {
+        selectedAvatar = emoji;
+        document.querySelectorAll('.avatar-opt').forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    function updateProfileTabHeader() {
+        const btn = document.getElementById('profile-tab-btn');
+        if(btn) {
+            btn.innerText = currentUser ? `${currentUser.avatar} ${currentUser.username}` : "Войти";
+        }
+    }
+
+    function renderAuthUI() {
+        const container = document.getElementById('auth-ui');
+        if (!container) return;
+        
+        if (currentUser) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="user-badge">
+                        <div class="user-av">${currentUser.avatar}</div>
+                        <div>
+                            <h3>${currentUser.username}</h3>
+                            <p style="font-size:0.8rem; color:var(--text-muted);">ID: ${currentUser.id}</p>
+                        </div>
+                    </div>
+                    <p style="margin-bottom:15px; font-size:0.9rem; color:var(--text-muted);">Запишите ваш ID и пароль, чтобы зайти с другого устройства:<br><b>Пароль:</b> ${currentUser.password}</p>
+                    <button class="btn-sec" onclick="logout()">Выйти из аккаунта</button>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="card">
+                    <h3>Создать новый аккаунт</h3>
+                    <input type="text" id="reg-name" placeholder="Ваше имя / Никнейм">
+                    <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:5px;">Выберите аватарку:</p>
+                    <div class="avatar-picker">
+                        <div class="avatar-opt selected" onclick="changeAvatar('🤖', this)">🤖</div>
+                        <div class="avatar-opt" onclick="changeAvatar('🐱', this)">🐱</div>
+                        <div class="avatar-opt" onclick="changeAvatar('🐸', this)">🐸</div>
+                        <div class="avatar-opt" onclick="changeAvatar('👑', this)">👑</div>
+                        <div class="avatar-opt" onclick="changeAvatar('🔥', this)">🔥</div>
+                    </div>
+                    <button class="btn-success" onclick="registerAccount()">Сгенерировать ID и Войти</button>
+                </div>
+                <div class="card">
+                    <h3>Войти по ID</h3>
+                    <input type="text" id="login-id" placeholder="Ваш User ID">
+                    <input type="password" id="login-pass" placeholder="Ваш Пароль">
+                    <button onclick="loginAccount()">Войти</button>
+                </div>
+            `;
+        }
+    }
+
+    async function registerAccount() {
+        const username = document.getElementById('reg-name').value.trim();
+        if(!username) return alert("Введите никнейм!");
+
+        const userId = 'user_' + Math.floor(100000 + Math.random() * 900000);
+        const password = Math.floor(1000 + Math.random() * 9000).toString();
+        const newUser = { id: userId, password: password, username: username, avatar: selectedAvatar };
+
+        if(supabase) {
+            const { error } = await supabase.from('profiles').insert([newUser]);
+            if(error) return alert("Ошибка при создании аккаунта: " + error.message);
         }
 
-        async function downloadImage() {
-            if (!currentImageUrl) return;
-            try {
-                const response = await fetch(currentImageUrl);
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = `ai-art-${Date.now()}.jpg`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(blobUrl);
-            } catch (e) { window.open(currentImageUrl, '_blank'); }
+        localStorage.setItem('studio_user', JSON.stringify(newUser));
+        currentUser = newUser;
+        updateProfileTabHeader();
+        renderAuthUI();
+    }
+
+    async function loginAccount() {
+        const id = document.getElementById('login-id').value.trim();
+        const pass = document.getElementById('login-pass').value.trim();
+
+        if(!id || !pass) return alert("Заполните все поля!");
+
+        if(supabase) {
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', id).eq('password', pass).single();
+            if(error || !data) return alert("Неверный ID или пароль!");
+            
+            currentUser = data;
+            localStorage.setItem('studio_user', JSON.stringify(currentUser));
+            updateProfileTabHeader();
+            renderAuthUI();
+        } else {
+            alert("База данных не подключена. Проверьте ключи!");
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('studio_user');
+        currentUser = null;
+        updateProfileTabHeader();
+        renderAuthUI();
+    }
+
+    // --- ГЕНЕРАЦИЯ И СТИЛИ ---
+    let currentImageUrl = '';
+
+    async function generateImage() {
+        const promptInput = document.getElementById('prompt').value.trim();
+        const size = document.getElementById('size').value.split('x');
+        const styleSelect = document.getElementById('style').value;
+        
+        let finalStyle = styleSelect;
+        if(styleSelect === 'custom') {
+            finalStyle = document.getElementById('custom-style-input').value.trim() || 'highly detailed';
         }
 
-        // PWA логика установки
-        let defPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); defPrompt = e; document.getElementById('pwa-install-btn').style.display = 'block'; });
-        function installPWA() { if (defPrompt) { defPrompt.prompt(); defPrompt.userChoice.then(() => { document.getElementById('pwa-install-btn').style.display = 'none'; defPrompt = null; }); } }
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
-    </script>
+        const imgElement = document.getElementById('result-img');
+        const loader = document.getElementById('loader');
+        const downloadBtn = document.getElementById('download-btn');
+
+        if (!promptInput) return alert("Введите описание!");
+
+        loader.style.display = 'block';
+        imgElement.style.display = 'none';
+        downloadBtn.style.display = 'none';
+
+        const seed = Math.floor(Math.random() * 999999);
+        const encodedPrompt = encodeURIComponent(`${promptInput}, ${finalStyle}`);
+        currentImageUrl = `https://image.pollinations.ai/p/${encodedPrompt}?width=${size[0]}&height=${size[1]}&seed=${seed}&nologo=true`;
+
+        imgElement.src = currentImageUrl;
+        
+        imgElement.onload = async function() {
+            loader.style.display = 'none';
+            imgElement.style.display = 'block';
+            downloadBtn.style.display = 'block';
+            
+            if(currentUser && supabase) {
+                await supabase.from('gallery').insert([{
+                    user_id: currentUser.id,
+                    url: currentImageUrl,
+                    prompt: promptInput
+                }]);
+            }
+        };
+
+        imgElement.onerror = function() {
+            loader.style.display = 'none';
+            alert("Ошибка генерации. Попробуйте еще раз.");
+        };
+    }
+
+    // --- УМНАЯ ГАЛЕРЕЯ И ПОИСК ---
+    async function loadGallery() {
+        const grid = document.getElementById('gallery-grid');
+        if(!grid) return;
+        grid.innerHTML = '<div class="loader" style="display:block;"></div>';
+
+        if(supabase) {
+            const { data, error } = await supabase.from('gallery').select('*, profiles(username, avatar)').order('created_at', { ascending: false });
+            if(!error && data) {
+                globalGalleryData = data;
+                displayGalleryItems(globalGalleryData);
+                return;
+            }
+        }
+        grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--text-muted);">Не удалось загрузить галерею. Убедитесь, что настроили базу Supabase.</p>';
+    }
+
+    function displayGalleryItems(items) {
+        const grid = document.getElementById('gallery-grid');
+        if(!grid) return;
+        grid.innerHTML = '';
+
+        if(items.length === 0) {
+            grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; color:var(--text-muted);">Ничего не найдено</p>';
+            return;
+        }
+
+        items.forEach(item => {
+            const authorName = item.profiles ? item.profiles.username : "Аноним";
+            const authorAv = item.profiles ? item.profiles.avatar : "👤";
+            
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'gallery-item';
+            itemDiv.innerHTML = `
+                <div class="author-tag">${authorAv} ${authorName}</div>
+                <img src="${item.url}" alt="AI" onclick="window.open('${item.url}', '_blank')">
+                <div class="item-info">${item.prompt}</div>
+            `;
+            grid.appendChild(itemDiv);
+        });
+    }
+
+    function filterGallery() {
+        const query = document.getElementById('gallery-search').value.toLowerCase().trim();
+        const filtered = globalGalleryData.filter(item => item.prompt.toLowerCase().includes(query));
+        displayGalleryItems(filtered);
+    }
+
+    async function downloadImage() {
+        if (!currentImageUrl) return;
+        try {
+            const response = await fetch(currentImageUrl);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `ai-art-${Date.now()}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+        } catch (e) { window.open(currentImageUrl, '_blank'); }
+    }
+
+    // PWA логика
+    let defPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); defPrompt = e; const btn = document.getElementById('pwa-install-btn'); if(btn) btn.style.display = 'block'; });
+    function installPWA() { if (defPrompt) { defPrompt.prompt(); defPrompt.userChoice.then(() => { const btn = document.getElementById('pwa-install-btn'); if(btn) btn.style.display = 'none'; defPrompt = null; }); } }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+</script>
 </body>
 </html>
