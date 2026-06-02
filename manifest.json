@@ -1,0 +1,19 @@
+{
+  "nav_configuration": {
+    "display": "standalone"
+  },
+  "name": "Pollinations AI Studio",
+  "short_name": "AI Studio",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme-color": "#121212",
+  "description": "Генератор картинок с помощью нейросетей",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2103/2103633.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
